@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # ==================== MySQL ====================
+  mysql:
+    image: mysql:8.0
+    container_name: waoowaoo-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-waoowaoo123}
+      MYSQL_DATABASE: waoowaoo
+      MYSQL_ROOT_HOST: "%"
+    # 删除了 ports 映射，外部无法直接连接，更安全
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - waoowaoo-internal # 只加入内部网络
+    command: 
+      - "--default-authentication-plugin=mysql_native_password"
+      - "--sql_mode=STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p${MYSQL_ROOT_PASSWORD:-waoowaoo123}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # ==================== Redis ====================
+  redis:
+    image: redis:7-alpine
+    container_name: waoowaoo-redis
+    restart: unless-stopped
+    # 删除了 ports 映射
+    volumes:
+      - redis_data:/data
+    networks:
+      - waoowaoo-internal # 只加入内部网络
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # ==================== App ====================
+  app:
+    build: .
+    container_name: waoowaoo-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "mysql://root:${MYSQL_ROOT_PASSWORD:-waoowaoo123}@mysql:3306/waoowaoo"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      # ... 其他变量
+    # 如果你想通过 Dokploy 的域名访问，甚至这里的 ports 也可以不写
+    # 但为了方便调试，可以保留，或者依赖 Dokploy 的网络转发
+    ports:
+      - "13000:3000"
+    networks:
+      - waoowaoo-internal # 连接数据库
+      - dokploy-network   # 连接 Dokploy 网关
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "npx prisma db push --skip-generate && npm run start"
+
+networks:
+  # 内部私有网络，自动创建
+  waoowaoo-internal:
+    driver: bridge
+  # 引用 Dokploy 已有的外部网络
+  dokploy-network:
+    external: true
+
+volumes:
+  mysql_data:
+  redis_data:
