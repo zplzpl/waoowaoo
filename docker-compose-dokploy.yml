@@ -48,9 +48,52 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: "mysql://root:${MYSQL_ROOT_PASSWORD:-waoowaoo123}@mysql:3306/waoowaoo"
-      REDIS_HOST: redis
-      REDIS_PORT: "6379"
-      # ... 其他变量
+      
+      # Redis 连接：使用服务名 redis
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_USERNAME: ${REDIS_USERNAME:-""}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-""}
+      REDIS_TLS: ${REDIS_TLS:-""}
+# ==================== 存储与认证 (Storage & Auth) ====================
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      
+      # 认证配置（建议在 Dokploy UI 中填写正式域名）
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-waoowaoo-default-secret-2026}
+
+      # 内部密钥
+      CRON_SECRET: ${CRON_SECRET:-waoowaoo-docker-cron-secret}
+      INTERNAL_TASK_TOKEN: ${INTERNAL_TASK_TOKEN:-waoowaoo-docker-task-token}
+      API_ENCRYPTION_KEY: ${API_ENCRYPTION_KEY:-waoowaoo-opensource-fixed-key-2026}
+
+      # ==================== Worker 与队列 (Worker & Bull Board) ====================
+      WATCHDOG_INTERVAL_MS: ${WATCHDOG_INTERVAL_MS:-30000}
+      TASK_HEARTBEAT_TIMEOUT_MS: ${TASK_HEARTBEAT_TIMEOUT_MS:-90000}
+      
+      QUEUE_CONCURRENCY_IMAGE: ${QUEUE_CONCURRENCY_IMAGE:-50}
+      QUEUE_CONCURRENCY_VIDEO: ${QUEUE_CONCURRENCY_VIDEO:-50}
+      QUEUE_CONCURRENCY_VOICE: ${QUEUE_CONCURRENCY_VOICE:-20}
+      QUEUE_CONCURRENCY_TEXT: ${QUEUE_CONCURRENCY_TEXT:-50}
+
+      # 修正 Bull Board 监听地址，确保面板可访问
+      BULL_BOARD_HOST: ${BULL_BOARD_HOST:-0.0.0.0}
+      BULL_BOARD_PORT: ${BULL_BOARD_PORT:-3010}
+      BULL_BOARD_BASE_PATH: ${BULL_BOARD_BASE_PATH:-/admin/queues}
+      BULL_BOARD_USER: ${BULL_BOARD_USER:-""}
+      BULL_BOARD_PASSWORD: ${BULL_BOARD_PASSWORD:-""}
+
+      # ==================== 日志与业务 (Logging & Billing) ====================
+      LOG_UNIFIED_ENABLED: ${LOG_UNIFIED_ENABLED:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      LOG_DEBUG_ENABLED: ${LOG_DEBUG_ENABLED:-false}
+      LOG_AUDIT_ENABLED: ${LOG_AUDIT_ENABLED:-true}
+      LOG_SERVICE: ${LOG_SERVICE:-waoowaoo}
+      LOG_REDACT_KEYS: ${LOG_REDACT_KEYS:-"password,token,apiKey,apikey,authorization,cookie,secret,access_token,refresh_token"}
+
+      BILLING_MODE: ${BILLING_MODE:-SHADOW}
+      LLM_STREAM_EPHEMERAL_ENABLED: ${LLM_STREAM_EPHEMERAL_ENABLED:-true}
     # 如果你想通过 Dokploy 的域名访问，甚至这里的 ports 也可以不写
     # 但为了方便调试，可以保留，或者依赖 Dokploy 的网络转发
     ports:
