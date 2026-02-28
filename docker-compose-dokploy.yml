@@ -50,11 +50,11 @@ services:
       DATABASE_URL: "mysql://root:${MYSQL_ROOT_PASSWORD:-waoowaoo123}@mysql:3306/waoowaoo"
       
       # Redis 连接：使用服务名 redis
-      REDIS_HOST: ${REDIS_HOST:-redis}
-      REDIS_PORT: ${REDIS_PORT:-6379}
-      REDIS_USERNAME: ${REDIS_USERNAME:-""}
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-""}
-      REDIS_TLS: ${REDIS_TLS:-""}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_USERNAME: ""
+      REDIS_PASSWORD: ""
+      REDIS_TLS: ""
 # ==================== 存储与认证 (Storage & Auth) ====================
       STORAGE_TYPE: ${STORAGE_TYPE:-local}
       
