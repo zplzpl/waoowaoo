@@ -92,7 +92,7 @@ services:
       LOG_SERVICE: ${LOG_SERVICE:-waoowaoo}
       LOG_REDACT_KEYS: ${LOG_REDACT_KEYS:-"password,token,apiKey,apikey,authorization,cookie,secret,access_token,refresh_token"}
 
-      BILLING_MODE: ${BILLING_MODE:-SHADOW}
+      BILLING_MODE: ${BILLING_MODE:-OFF}
       LLM_STREAM_EPHEMERAL_ENABLED: ${LLM_STREAM_EPHEMERAL_ENABLED:-true}
     # 如果你想通过 Dokploy 的域名访问，甚至这里的 ports 也可以不写
     # 但为了方便调试，可以保留，或者依赖 Dokploy 的网络转发
